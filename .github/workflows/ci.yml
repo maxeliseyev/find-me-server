@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        # На runner'ах amd64, поэтому здесь официальный образ,
+        # а не multi-arch зеркало из docker-compose.
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_DB: findme
+          POSTGRES_USER: findme
+          POSTGRES_PASSWORD: findme
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U findme"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+    env:
+      DATABASE_URL: postgis://findme:findme@localhost:5432/findme
+      REDIS_URL: redis://localhost:6379/0
+      DJANGO_SECRET_KEY: ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - name: Системные библиотеки GeoDjango
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends
+             binutils libproj-dev gdal-bin libgdal-dev
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - name: Миграции без хвостов
+        run: uv run python manage.py makemigrations --check --dry-run
+      - name: Миграции применяются на чистой БД
+        run: uv run python manage.py migrate
+      - run: uv run pytest
+
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+      - name: status.md соответствует ветке PR
+        if: github.event_name == 'pull_request'
+        run: uv run python scripts/check_status.py --branch "${{ github.head_ref }}"
+      - name: Новые настройки описаны в .env.example
+        run: uv run python scripts/check_env_example.py

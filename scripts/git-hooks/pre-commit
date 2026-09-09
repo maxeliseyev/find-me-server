@@ -1,0 +1,15 @@
+#!/bin/sh
+# Запрещает коммит напрямую в main. Установка: make hooks.
+# Разовый обход (только для восстановления истории): git commit --no-verify
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$branch" = "main" ]; then
+    echo "✗ Коммит в main запрещён (AGENTS.md, docs/git-workflow.md)."
+    echo "  Ветка от актуального main:"
+    echo "    git checkout -b feat/<тема>"
+    echo "  Уже наделали коммитов в main — docs/git-workflow.md, секция «Если случайно закоммитил»."
+    exit 1
+fi
+
+exit 0
