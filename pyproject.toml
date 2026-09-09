@@ -1,0 +1,58 @@
+[project]
+name = "find-me-server"
+version = "0.1.0"
+description = "Сервис поиска потерянных животных: отметки о наблюдениях на карте"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "django>=5.2,<5.3",              # LTS до апреля 2028
+    "djangorestframework>=3.16",
+    "django-cors-headers>=4.7",
+    "django-environ>=0.12",
+    "django-filter>=25.1",
+    "psycopg[binary]>=3.2",
+    "celery[redis]>=5.5",
+    "redis>=6.0",
+    "pillow>=11.2",
+    "boto3>=1.38",
+    "django-storages>=1.14",
+    "drf-spectacular>=0.28",
+    "gunicorn>=23.0",
+]
+
+[project.optional-dependencies]
+bot = [
+    "aiogram>=3.20",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.11",
+    "pytest>=8.3",
+    "pytest-django>=4.11",
+    "pytest-cov>=6.1",
+    "factory-boy>=3.3",
+    "django-debug-toolbar>=5.2",
+    "django-extensions>=4.1",
+    "ipython>=9.2",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ", "C4", "SIM", "RUF"]
+ignore = [
+    "RUF001", "RUF002", "RUF003",  # кириллица в строках и комментариях — норма
+    "RUF012",                      # Meta.indexes / admin.inlines — штатный Django-паттерн
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config", "bot"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-ra --strict-markers"
+testpaths = ["tests", "apps"]
