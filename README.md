@@ -1,7 +1,13 @@
 # Find Me — сервис поиска потерянных животных
 
 Бэкенд сервиса, где первичная сущность — **отметка о наблюдении**, а не объявление.
-Спецификация: [docs/spec-poisk-zhivotnyh.md](docs/spec-poisk-zhivotnyh.md).
+
+- Продукт целиком: [docs/spec-poisk-zhivotnyh.md](docs/spec-poisk-zhivotnyh.md)
+- Контракт репозитория и инварианты: [AGENTS.md](AGENTS.md)
+- Где остановились: [docs/status.md](docs/status.md)
+- Протокол смены: [docs/handoff.md](docs/handoff.md)
+- Ветки и PR: [docs/git-workflow.md](docs/git-workflow.md)
+- Версия: `VERSION` (semver) — см. [docs/versioning.md](docs/versioning.md)
 
 ## Стек
 
@@ -18,6 +24,7 @@
 brew install gdal geos proj        # системные библиотеки для GeoDjango
 cp .env.example .env
 make install                       # uv sync --all-extras
+make hooks                         # git-хуки репозитория (запрет коммитов в main)
 make up                            # postgis + redis в docker (compose)
 make migrate
 make superuser
@@ -25,6 +32,8 @@ make run                           # http://localhost:8000/admin/
 ```
 
 Фоновые задачи — `make worker` и `make beat`, бот — `make bot`.
+`make check` гоняет то же, что CI: ruff, тесты, `makemigrations --check`,
+сверку `docs/status.md` с веткой и `.env.example` с настройками.
 Всё целиком в докере: `docker compose up` (бот — `docker compose --profile bot up`).
 
 На Apple Silicon в compose используется multi-arch образ `imresamu/postgis`:
@@ -68,6 +77,14 @@ docker/            Dockerfile
   нельзя было усреднить по нескольким запросам.
 - **EXIF режется перед отдачей**, GPS из него используется до этого (`SightingPhoto.exif_stripped`).
 - **Уведомления логируются** (`NotificationLog`) — без этого не сделать дедуп и потолок.
+
+## Как работаем
+
+Работа идёт только в ветках: `feat/…`, `fix/…`, `chore/…`, `docs/…`, `test/…`
+→ PR → squash в `main`. Прямая запись в `main` закрыта ruleset'ом на GitHub
+и pre-commit хуком локально (`make hooks` — один раз на клон).
+Подробности — [docs/git-workflow.md](docs/git-workflow.md),
+обоснование — [ADR](docs/decisions/git-trunk-until-v1.md).
 
 ## Открыто (раздел 12 спеки)
 
