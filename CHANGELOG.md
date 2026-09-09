@@ -3,23 +3,6 @@
 Формат: [Keep a Changelog](https://keepachangelog.com/). Версия — semver
 `major.minor.patch`. Источник правды: файл `VERSION`. Как бампать: `docs/versioning.md`.
 
-## 0.1.1 — 2026-09-09
-
-### Added
-
-- Инварианты `AGENTS.md` стали исполняемым контрактом: `tests/test_invariants.py`
-  с номером инварианта в имени теста (анонимная отметка, переживание объявления,
-  смещение публичной точки, geography+GiST, независимость `seen_at`).
-- `pre-push` хук: `make check` до отправки ветки; тесты пропускаются с
-  предупреждением, если PostGIS не поднят.
-- `make session-start` — ритуал старта смены одной командой.
-- Dependabot: экшены и `uv.lock` раз в месяц, отдельными группами.
-
-### Changed
-
-- Джобы `lint`, `test`, `contract` обязательны для мержа в `main`
-  (required status checks в ruleset).
-
 ## 0.1.0 — 2026-09-09
 
 ### Added

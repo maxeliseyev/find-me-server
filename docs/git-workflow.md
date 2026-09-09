@@ -20,20 +20,11 @@ feat/sighting-api   fix/fanout-quiet-hours   docs/agents-md   chore/ci
 3. Коммиты — Conventional Commits (`feat(sightings): …`).
 4. Открыть PR **в `main`**. Прямой пуш в `main` запрещён, включая автора репо;
    на GitHub это закрыто ruleset'ом, локально — pre-commit хуком (`make hooks`).
-5. Зелёный CI: джобы `lint`, `test`, `contract` обязательны для мержа
-   (required status checks в ruleset). Definition of done — в `AGENTS.md`.
+5. Зелёный CI. Definition of done — в `AGENTS.md`.
 6. Ревью: если второго человека на PR нет, self-merge допустим с пометкой в
    описании (`self-merge: <причина>`).
 7. Merge: **squash**. История `main` = один шаг / один фикс на коммит.
 8. Удалить ветку после merge.
-
-`pre-push` гоняет `make check` до отправки ветки: ruff, сверку `status.md` и
-`.env.example`, `makemigrations --check` и тесты, если PostGIS поднят. Ошиблись —
-чините, а не `--no-verify`: обход допустим в исключительном случае и объясняется
-в описании PR.
-
-Зависимости и экшены обновляет Dependabot раз в месяц (`chore(deps)`,
-`chore(ci)`). Мажорную линию Django он не тронет: она закреплена в `pyproject.toml`.
 
 Незаконченная сессия: push ветки (хотя бы draft PR) и имя ветки в `status.md`.
 Local working tree второй человек не подхватит.
