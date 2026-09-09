@@ -1,0 +1,45 @@
+#!/bin/sh
+# Гоняет то же, что CI, до того как ветка уедет на GitHub.
+# Установка: make hooks. Обход в исключительном случае: git push --no-verify
+#
+# Тесты требуют поднятого PostGIS. Если БД недоступна — не блокируем push,
+# а предупреждаем: CI всё равно прогонит их на чистой базе.
+
+set -e
+
+fail() {
+    echo "✗ $1"
+    echo "  Починить и повторить, либо git push --no-verify (и объяснить в PR)."
+    exit 1
+}
+
+echo "→ ruff"
+uv run ruff check . || fail "ruff check"
+uv run ruff format --check . || fail "ruff format"
+
+echo "→ контракт репозитория"
+uv run python scripts/check_status.py || fail "docs/status.md разошёлся с веткой"
+uv run python scripts/check_env_example.py || fail ".env.example не покрывает настройки"
+
+echo "→ миграции"
+uv run python manage.py makemigrations --check --dry-run >/dev/null || \
+    fail "есть незакоммиченные изменения моделей: make mm"
+
+if uv run python -c "
+import sys
+from django.db import connection
+import django, os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.local')
+django.setup()
+try:
+    connection.ensure_connection()
+except Exception:
+    sys.exit(1)
+" 2>/dev/null; then
+    echo "→ pytest"
+    uv run pytest -q || fail "тесты"
+else
+    echo "⚠ PostGIS недоступен, тесты пропущены (make up). CI прогонит их сам."
+fi
+
+echo "✓ проверки пройдены"

@@ -2,9 +2,9 @@
 
 Updated: 2026-09-09
 Stage: 1 (ядро)
-Step: контракт репозитория; код этапа 1 ещё не начат
-Branch: `docs/repo-contract`
-PR: draft
+Step: механические гарантии контракта; код этапа 1 ещё не начат
+Branch: `chore/flow-guards`
+PR: #1 (контракт) + #2 (эта ветка, поверх #1)
 Blockers: none
 
 ## Done
@@ -23,8 +23,12 @@ Blockers: none
 
 ## Now
 
-- Ветка `docs/repo-contract` готова к PR. Код приложений не менялся:
-  бизнес-логика по-прежнему заглушки с `NotImplementedError`.
+- PR #1 (`docs/repo-contract`) зелёный, ждёт мержа.
+- Ветка `chore/flow-guards` поверх него: инвариантные тесты, `pre-push`,
+  `make session-start`, Dependabot, required status checks. После мержа #1
+  GitHub перенацелит PR #2 на `main`.
+- Код приложений не менялся: бизнес-логика по-прежнему заглушки
+  с `NotImplementedError`.
 
 ## Next
 
@@ -34,10 +38,10 @@ Blockers: none
 
 ## Resume
 
-1. `git fetch && git checkout docs/repo-contract && git pull`
+1. `git fetch && git checkout chore/flow-guards && git pull`
 2. `make hooks && make up && make migrate`
-3. `make lint && make test`
-4. Смёржить PR, затем начать `feat/sighting-api` от свежего `main`.
+3. `make session-start && make check`
+4. Смёржить #1, затем #2, затем начать `feat/sighting-api` от свежего `main`.
 
 ## Open
 

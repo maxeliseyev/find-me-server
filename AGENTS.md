@@ -45,14 +45,22 @@ PostgreSQL 16 + PostGIS, Redis, Celery, aiogram, `uv`.
 Канон — `make` (обёртка над `uv` и `docker compose`).
 
 ```bash
-make install      # uv sync --all-extras
-make up           # postgis + redis
+make install        # uv sync --all-extras
+make hooks          # git-хуки репозитория, один раз на клон
+make session-start  # ритуал старта смены: ветка, PR, docs/status.md
+make up             # postgis + redis
 make migrate / mm
-make run          # dev-сервер
+make run            # dev-сервер
 make worker / beat / bot
-make test         # pytest
-make lint / fmt   # ruff
+make test           # pytest
+make lint / fmt     # ruff
+make check          # всё, что гоняет CI
 ```
+
+Хуки: `pre-commit` запрещает коммит в `main`, `pre-push` гоняет `make check`
+(тесты пропускаются с предупреждением, если PostGIS не поднят — CI прогонит
+их на чистой базе). Обход в исключительном случае — `--no-verify`, с
+объяснением в описании PR.
 
 Системные GDAL/GEOS обязательны (`brew install gdal geos proj`); пути к ним —
 в `.env` (`GDAL_LIBRARY_PATH`, `GEOS_LIBRARY_PATH`), если Django их не находит.
@@ -180,6 +188,13 @@ tests/           кросс-приложенческие тесты; юнит-т
 - **EXIF** — на выходе метаданных нет;
 - **модерацию** — автоскрытие при N жалобах.
 
+**Инварианты — исполняемый контракт, а не текст.** Инвариант из списка выше,
+который в принципе проверяем кодом, живёт тестом в `tests/test_invariants.py`
+с номером в имени: `test_invariant_03_public_geog_hides_the_exact_point`.
+Инвариант, поведения для которого ещё нет (фан-аут, EXIF, веса), получает тест
+в том же PR, что и реализацию. Правило существует потому, что список правил
+можно прочитать невнимательно, а падающий тест — нет.
+
 Тесты гоняются на живом PostGIS (`make up`), не на sqlite: половина инвариантов
 здесь — про PostGIS. Помеченный `xfail` известный дефект лучше, чем строчка в
 списке Open.
@@ -210,6 +225,7 @@ Definition of done:
 2. `make lint` и `make test` зелёные; `makemigrations --check` чистый.
 3. Если менялись модели — миграция в том же PR.
 4. Если менялось поведение — есть тест, который падал бы до правки.
+   Реализован инвариант из списка — тест в `tests/test_invariants.py`.
 5. Если добавилась настройка — она в `.env.example`.
 6. `docs/status.md` соответствует git (Branch, Now, Next, Resume).
 7. Нетривиальное решение — session note с **Why**; ограничивающее будущее — ADR.

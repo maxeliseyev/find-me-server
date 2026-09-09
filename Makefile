@@ -1,5 +1,5 @@
 .PHONY: install hooks up down migrate mm run worker beat bot shell test lint fmt \
-        superuser check status-check env-check version
+        superuser check status-check env-check version session-start
 
 install:            ## Поставить зависимости
 	uv sync --all-extras
@@ -58,3 +58,6 @@ check: lint status-check env-check test  ## Всё, что гоняет CI
 
 version:
 	@cat VERSION
+
+session-start:      ## Ритуал старта сессии: ветка, PR, docs/status.md
+	@uv run python scripts/session_start.py
