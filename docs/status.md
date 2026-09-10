@@ -1,10 +1,10 @@
 # Status
 
-Updated: 2026-09-09
+Updated: 2026-09-10
 Stage: 1 (ядро)
-Step: механические гарантии контракта; код этапа 1 ещё не начат
-Branch: `chore/flow-guards`
-PR: #2 — https://github.com/maxeliseyev/find-me-server/pull/2
+Step: гигиена Dependabot перед стартом кода этапа 1
+Branch: `chore/dependabot-guard`
+PR: draft
 Blockers: none
 
 ## Done
@@ -23,13 +23,12 @@ Blockers: none
 
 ## Now
 
-- PR #1 смёржен в `main` squash-коммитом `b7d4e9b`: контракт репозитория.
-- PR #2 (`chore/flow-guards`) перенацелен на `main`: инвариантные тесты,
-  `pre-push`, `make session-start`, Dependabot, required status checks.
-- «Update branch» на GitHub после squash-мержа #1 откатил на ветке шесть
-  файлов (`AGENTS.md`, `CHANGELOG.md`, `VERSION`, `Makefile`,
-  `docs/git-workflow.md`, `docs/status.md`) — восстановлено; в
-  `docs/git-workflow.md` появился раздел про stacked-ветки.
+- PR #1 (`b7d4e9b`) и PR #2 (`a3b0a0e`) смёржены в `main`: контракт
+  репозитория и его механические гарантии.
+- Dependabot отработал первым же прогоном и предложил Django 6.1 — с правкой
+  границы `<5.3` в `pyproject.toml`. Запрещено явным `ignore` в
+  `.github/dependabot.yml`; PR закрыт.
+- Открыты PR #3 и #4 от Dependabot на экшены — рутина, ждут проверки CI.
 - Код приложений не менялся: бизнес-логика по-прежнему заглушки
   с `NotImplementedError`.
 
@@ -41,10 +40,10 @@ Blockers: none
 
 ## Resume
 
-1. `git fetch && git checkout chore/flow-guards && git pull`
+1. `git fetch && git checkout chore/dependabot-guard && git pull`
 2. `make hooks && make up && make migrate`
 3. `make session-start && make check`
-4. Смёржить #2, затем начать `feat/sighting-api` от свежего `main`.
+4. Смёржить этот PR и #3/#4, затем `feat/sighting-api` от свежего `main`.
 
 ## Open
 
