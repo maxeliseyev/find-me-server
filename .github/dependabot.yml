@@ -11,8 +11,9 @@ updates:
     labels: ["chore"]
     open-pull-requests-limit: 3
 
-  # Питон-зависимости через uv.lock. Django ограничен `<5.3` в pyproject:
-  # LTS-линия меняется отдельным PR, а не автоматическим бампом.
+  # Питон-зависимости через uv.lock. Границу `<5.3` в pyproject Dependabot
+  # готов подвинуть сам, поэтому major/minor Django запрещены явно:
+  # LTS-линия меняется осознанно, отдельным PR (AGENTS.md, «Python / Django»).
   - package-ecosystem: uv
     directory: "/"
     schedule:
@@ -21,6 +22,11 @@ updates:
       prefix: "chore(deps)"
     labels: ["chore"]
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: django
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
     groups:
       dev-tools:
         patterns: ["ruff", "pytest*", "factory-boy", "django-debug-toolbar", "django-extensions", "ipython"]
