@@ -4,7 +4,7 @@ Updated: 2026-09-10
 Stage: 1 (ядро)
 Step: спецификация v0.2
 Branch: `docs/spec-v0-2`
-PR: none
+PR: https://github.com/maxeliseyev/find-me-server/pull/9 (draft)
 Blockers: none
 
 ## Done
@@ -23,18 +23,18 @@ Blockers: none
 
 ## Now
 
-- На ветке `docs/spec-v0-2` уточнены стек карты, геокодинг и Telegram как
-  канал создания отметки; добавлены два ADR. Нужны проверка, commit, push и PR.
+- Draft PR #9: уточнены стек карты, геокодинг и Telegram как канал создания
+  отметки; добавлены два ADR. `make lint` и `make test` зелёные.
 
 ## Next
 
-- Проверить и смёржить документационный PR.
+- Проверить и смёржить draft PR #9.
 
 ## Resume
 
 1. `git fetch && git checkout docs/spec-v0-2 && git pull`
 2. `make hooks && make up && make migrate`
-3. Проверить и смёржить документационный PR; затем создать `feat/report-api`.
+3. Проверить и смёржить #9; затем создать `feat/report-api`.
 
 ## Open
 
