@@ -4,7 +4,7 @@ Updated: 2026-09-10
 Stage: 1 (ядро)
 Step: этап 1 — выдача карты
 Branch: `feat/map-api`
-PR: none
+PR: https://github.com/maxeliseyev/find-me-server/pull/8 (draft)
 Blockers: none
 
 ## Done
@@ -21,8 +21,8 @@ Blockers: none
 
 ## Now
 
-- На ветке `feat/map-api` реализована и проверена выдача активных объявлений и
-  видимых отметок в bbox с серверной кластеризацией. Нужны commit, push и draft PR.
+- Draft PR #8: реализована и проверена выдача активных объявлений и видимых
+  отметок в bbox с серверной кластеризацией. `make lint` и `make test` зелёные.
 
 ## Next
 
@@ -32,7 +32,7 @@ Blockers: none
 
 1. `git fetch && git checkout feat/map-api && git pull`
 2. `make hooks && make up && make migrate`
-3. После merge карты создать `feat/report-api` от свежего `main`.
+3. Проверить и смёржить #8; после merge создать `feat/report-api` от свежего `main`.
 
 ## Open
 
