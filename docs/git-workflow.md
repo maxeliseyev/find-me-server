@@ -20,11 +20,20 @@ feat/sighting-api   fix/fanout-quiet-hours   docs/agents-md   chore/ci
 3. Коммиты — Conventional Commits (`feat(sightings): …`).
 4. Открыть PR **в `main`**. Прямой пуш в `main` запрещён, включая автора репо;
    на GitHub это закрыто ruleset'ом, локально — pre-commit хуком (`make hooks`).
-5. Зелёный CI. Definition of done — в `AGENTS.md`.
+5. Зелёный CI: джобы `lint`, `test`, `contract` обязательны для мержа
+   (required status checks в ruleset). Definition of done — в `AGENTS.md`.
 6. Ревью: если второго человека на PR нет, self-merge допустим с пометкой в
    описании (`self-merge: <причина>`).
 7. Merge: **squash**. История `main` = один шаг / один фикс на коммит.
 8. Удалить ветку после merge.
+
+`pre-push` гоняет `make check` до отправки ветки: ruff, сверку `status.md` и
+`.env.example`, `makemigrations --check` и тесты, если PostGIS поднят. Ошиблись —
+чините, а не `--no-verify`: обход допустим в исключительном случае и объясняется
+в описании PR.
+
+Зависимости и экшены обновляет Dependabot раз в месяц (`chore(deps)`,
+`chore(ci)`). Мажорную линию Django он не тронет: она закреплена в `pyproject.toml`.
 
 Незаконченная сессия: push ветки (хотя бы draft PR) и имя ветки в `status.md`.
 Local working tree второй человек не подхватит.
@@ -47,6 +56,29 @@ Local working tree второй человек не подхватит.
 - В описании: зачем, как проверить, какие инварианты `AGENTS.md` задеты.
 - Не смешивать модель данных, API и бота в одном PR.
 - Не тащить bump Django, реформат дерева и фичу вместе.
+
+### Ветка поверх ещё не смёрженной ветки (stacked PR)
+
+Так бывает, когда второй PR продолжает первый. База второго PR — первая ветка,
+не `main`; после мержа первого GitHub перенацеливает второй на `main` сам.
+
+**Не жать «Update branch» на GitHub у такого PR.** Первый PR ушёл в `main`
+squash-коммитом, и этот коммит не предок вашей ветки: для git это две
+разошедшиеся истории с общей базой на скелете. Merge сольёт их, выбрав сторону
+`main`, и молча откатит файлы, которые правил второй PR.
+
+Правильный путь — перенести ветку на новый `main`:
+
+```bash
+git fetch origin
+git rebase --onto origin/main <база-до-мержа> chore/<тема>
+git push --force-with-lease
+```
+
+`<база-до-мержа>` — последний коммит первой ветки (`git merge-base` до мержа
+или вершина первого PR). Если уже нажали «Update branch» — восстановите файлы
+из своего последнего коммита (`git checkout <sha> -- <файлы>`) и проверьте
+`git diff --name-only <sha>`: пусто = дерево совпало.
 
 ### Если случайно закоммитил в `main`
 
