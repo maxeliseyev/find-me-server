@@ -2,8 +2,8 @@
 
 Updated: 2026-09-10
 Stage: 1 (ядро)
-Step: гигиена Dependabot перед стартом кода этапа 1
-Branch: `chore/dependabot-guard`
+Step: этап 1 — API постановки отметки
+Branch: `feat/sighting-api`
 PR: draft
 Blockers: none
 
@@ -23,30 +23,33 @@ Blockers: none
 
 ## Now
 
-- PR #1 (`b7d4e9b`) и PR #2 (`a3b0a0e`) смёржены в `main`: контракт
-  репозитория и его механические гарантии.
-- Dependabot отработал первым же прогоном и предложил Django 6.1 — с правкой
-  границы `<5.3` в `pyproject.toml`. Запрещено явным `ignore` в
-  `.github/dependabot.yml`; PR закрыт.
-- Открыты PR #3 и #4 от Dependabot на экшены — рутина, ждут проверки CI.
-- Код приложений не менялся: бизнес-логика по-прежнему заглушки
-  с `NotImplementedError`.
+- PR #1 (`b7d4e9b`) и PR #2 (`a3b0a0e`) смёржены: контракт репозитория
+  и его механические гарантии.
+- PR #6 (`chore/dependabot-guard`) открыт: Dependabot предложил Django 6.1,
+  правя границу `<5.3` в `pyproject.toml`; запрет добавлен, его PR закрыт.
+- На этой ветке: первый рабочий код этапа 1 — постановка отметки.
+  `apps/sightings/{serializers,views,throttling,urls}.py`, 10 тестов API
+  и два инвариантных теста (1 — анонимная отметка, 12 — рейтлимит).
 
 ## Next
 
-- Этап 1, первый шаг: API постановки отметки без регистрации
-  (`apps/sightings`) — сериализатор, вьюха, рейтлимит, тесты на
-  `author IS NULL` / `report IS NULL`.
+- Этап 1, следующий шаг: выдача для карты — активные объявления и видимые
+  отметки в bbox, кластеризация на сервере, публичная точка объявления
+  через `public_geog`.
 
 ## Resume
 
-1. `git fetch && git checkout chore/dependabot-guard && git pull`
+1. `git fetch && git checkout feat/sighting-api && git pull`
 2. `make hooks && make up && make migrate`
 3. `make session-start && make check`
-4. Смёржить этот PR и #3/#4, затем `feat/sighting-api` от свежего `main`.
+4. Смёржить #6 и этот PR (ветку переносить `rebase --onto`, не «Update branch»),
+   затем `feat/map-api` от свежего `main`.
 
 ## Open
 
+- Фан-аут уведомлений и пересчёт зоны при новой отметке не подключены:
+  задачи Celery ещё заглушки. В `SightingCreateView` стоит TODO с местом вызова.
+- Загрузка фото к отметке (и срезка EXIF) — отдельный шаг, в этом API нет.
 - Монетизация не выбрана (раздел 12.1 спеки). Решение нужно до конца этапа 1:
   платное продвижение — отдельная подсистема, а не поле в модели.
 - Город и район пилота не выбраны; в коде не хардкодятся.

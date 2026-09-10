@@ -15,7 +15,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
 from django.db import connection
+from django.urls import reverse
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from apps.core.enums import Species
 from apps.geo.models import GeoSubscription
@@ -139,3 +141,46 @@ def test_invariant_07_seen_at_is_independent_from_created_at():
     assert sighting.seen_at < sighting.created_at
     assert timezone.is_aware(sighting.seen_at)
     assert settings.USE_TZ is True
+
+
+@pytest.mark.django_db
+def test_invariant_01_api_accepts_sighting_without_any_auth():
+    """Ноль экранов регистрации до отправки: анонимный POST обязан сохранять."""
+    response = APIClient().post(
+        reverse("sighting-create"),
+        {
+            "lat": MOSCOW.y,
+            "lon": MOSCOW.x,
+            "seen_at": (timezone.now() - timedelta(hours=1)).isoformat(),
+            "source": SightingSource.DEVICE_GPS,
+        },
+        format="json",
+    )
+
+    assert response.status_code == 201
+    assert Sighting.objects.get(pk=response.data["id"]).author_id is None
+
+
+@pytest.mark.django_db
+def test_invariant_12_anonymous_sightings_are_rate_limited():
+    """Для неавторизованного действия рейтлимит — единственная защита."""
+    client = APIClient()
+    url = reverse("sighting-create")
+    limit = int(settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["anon_sighting"].split("/")[0])
+
+    def post():
+        return client.post(
+            url,
+            {
+                "lat": MOSCOW.y,
+                "lon": MOSCOW.x,
+                "seen_at": (timezone.now() - timedelta(minutes=5)).isoformat(),
+                "source": SightingSource.MANUAL_PIN,
+            },
+            format="json",
+        )
+
+    for _ in range(limit):
+        assert post().status_code == 201
+
+    assert post().status_code == 429
