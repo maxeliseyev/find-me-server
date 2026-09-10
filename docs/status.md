@@ -2,9 +2,9 @@
 
 Updated: 2026-09-10
 Stage: 1 (ядро)
-Step: этап 1 — выдача карты
-Branch: `feat/map-api`
-PR: https://github.com/maxeliseyev/find-me-server/pull/8 (draft)
+Step: спецификация v0.2
+Branch: `docs/spec-v0-2`
+PR: https://github.com/maxeliseyev/find-me-server/pull/9 (draft)
 Blockers: none
 
 ## Done
@@ -18,21 +18,23 @@ Blockers: none
 - API постановки отметки слито в `main` коммитом `a529d63`:
   `apps/sightings/{serializers,views,throttling,urls}.py`, 10 тестов API
   и два инвариантных теста (1 — анонимная отметка, 12 — рейтлимит).
+- API карты слито в `main` коммитом `daae2c4`: GeoJSON-выдача по bbox,
+  серверная кластеризация и публичная точка объявления.
 
 ## Now
 
-- Draft PR #8: реализована и проверена выдача активных объявлений и видимых
-  отметок в bbox с серверной кластеризацией. `make lint` и `make test` зелёные.
+- Draft PR #9: уточнены стек карты, геокодинг и Telegram как канал создания
+  отметки; добавлены два ADR. `make lint` и `make test` зелёные.
 
 ## Next
 
-- Этап 1, следующий шаг: API создания активного объявления о пропаже.
+- Проверить и смёржить draft PR #9.
 
 ## Resume
 
-1. `git fetch && git checkout feat/map-api && git pull`
+1. `git fetch && git checkout docs/spec-v0-2 && git pull`
 2. `make hooks && make up && make migrate`
-3. Проверить и смёржить #8; после merge создать `feat/report-api` от свежего `main`.
+3. Проверить и смёржить #9; затем создать `feat/report-api`.
 
 ## Open
 
@@ -42,4 +44,5 @@ Blockers: none
 - Монетизация не выбрана (раздел 12.1 спеки). Решение нужно до конца этапа 1:
   платное продвижение — отдельная подсистема, а не поле в модели.
 - Город и район пилота не выбраны; в коде не хардкодятся.
-- Поставщик тайлов не выбран (своя сборка или Яндекс/2ГИС).
+- До выбора пилотного района нужно проверить качество OSM: номера домов и
+  контуры зданий (раздел 7.3 спеки).
