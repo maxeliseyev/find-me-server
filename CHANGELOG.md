@@ -3,6 +3,14 @@
 Формат: [Keep a Changelog](https://keepachangelog.com/). Версия — semver
 `major.minor.patch`. Источник правды: файл `VERSION`. Как бампать: `docs/versioning.md`.
 
+## 0.1.2 — 2026-09-10
+
+### Fixed
+
+- Dependabot больше не предлагает major/minor Django: границу `<5.3` в
+  `pyproject.toml` он готов подвинуть сам, поэтому запрет задан явным
+  `ignore`. LTS-линия меняется отдельным осознанным PR.
+
 ## 0.1.1 — 2026-09-09
 
 ### Added
