@@ -3,6 +3,13 @@
 Формат: [Keep a Changelog](https://keepachangelog.com/). Версия — semver
 `major.minor.patch`. Источник правды: файл `VERSION`. Как бампать: `docs/versioning.md`.
 
+## 0.3.1 — 2026-09-10
+
+### Changed
+
+- Спецификация v0.2 фиксирует открытый стек карты и геокодинга, а также
+  Telegram-бот как канал создания отметки.
+
 ## 0.3.0 — 2026-09-10
 
 ### Added
