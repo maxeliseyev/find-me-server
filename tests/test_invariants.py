@@ -108,6 +108,27 @@ def test_invariant_03_exact_precision_is_owners_explicit_choice(report):
 
 
 @pytest.mark.django_db
+def test_invariant_03_map_api_does_not_expose_exact_report_location(report):
+    """Публичный endpoint карты обязан использовать `public_geog`."""
+    response = APIClient().get(
+        reverse("map-viewport"),
+        {
+            "min_lon": 37.5,
+            "min_lat": 55.6,
+            "max_lon": 37.7,
+            "max_lat": 55.9,
+            "zoom": 22,
+        },
+    )
+
+    assert response.status_code == 200
+    feature = next(
+        item for item in response.data["features"] if item["properties"]["kind"] == "report"
+    )
+    assert feature["geometry"]["coordinates"] != [MOSCOW.x, MOSCOW.y]
+
+
+@pytest.mark.django_db
 def test_invariant_06_geo_fields_are_geography_with_gist_index():
     """Координаты — geography(Point,4326); поиск по радиусу идёт по GiST."""
     fields = [

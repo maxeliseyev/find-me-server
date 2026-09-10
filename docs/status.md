@@ -2,9 +2,9 @@
 
 Updated: 2026-09-10
 Stage: 1 (ядро)
-Step: этап 1 — API постановки отметки
-Branch: `feat/sighting-api`
-PR: draft
+Step: этап 1 — выдача карты
+Branch: `feat/map-api`
+PR: none
 Blockers: none
 
 ## Done
@@ -12,38 +12,27 @@ Blockers: none
 - Скелет слит в `main` коммитом `5bd003a`: Django 5.2 LTS + GeoDjango,
   приложения по модели данных спеки, миграции проверены на PostGIS 3.5,
   Celery, aiogram, docker-compose, ruff, pytest.
-- На ветке `docs/repo-contract`: `AGENTS.md`, `docs/handoff.md`,
-  `docs/git-workflow.md`, `docs/versioning.md`, пять ADR, `CHANGELOG.md`,
-  `VERSION` 0.1.0.
-- Механика правил: CI (ruff, pytest на живом PostGIS, `makemigrations --check`,
-  сверка status.md с веткой, сверка `.env.example`), шаблон PR,
-  pre-commit хук против коммитов в `main`, ruleset на GitHub.
-- `scripts/check_env_example.py` при первом запуске нашёл три
-  незадокументированные переменные — добавлены в `.env.example`.
-
-## Now
-
-- PR #1 (`b7d4e9b`) и PR #2 (`a3b0a0e`) смёржены: контракт репозитория
-  и его механические гарантии.
-- PR #6 (`chore/dependabot-guard`) открыт: Dependabot предложил Django 6.1,
-  правя границу `<5.3` в `pyproject.toml`; запрет добавлен, его PR закрыт.
-- На этой ветке: первый рабочий код этапа 1 — постановка отметки.
+- Контракт репозитория и механические гарантии слиты в `main` коммитами
+  `b7d4e9b` и `a3b0a0e`.
+- Dependabot не может поднимать major/minor Django (`0237a35`).
+- API постановки отметки слито в `main` коммитом `a529d63`:
   `apps/sightings/{serializers,views,throttling,urls}.py`, 10 тестов API
   и два инвариантных теста (1 — анонимная отметка, 12 — рейтлимит).
 
+## Now
+
+- На ветке `feat/map-api` реализована и проверена выдача активных объявлений и
+  видимых отметок в bbox с серверной кластеризацией. Нужны commit, push и draft PR.
+
 ## Next
 
-- Этап 1, следующий шаг: выдача для карты — активные объявления и видимые
-  отметки в bbox, кластеризация на сервере, публичная точка объявления
-  через `public_geog`.
+- Этап 1, следующий шаг: API создания активного объявления о пропаже.
 
 ## Resume
 
-1. `git fetch && git checkout feat/sighting-api && git pull`
+1. `git fetch && git checkout feat/map-api && git pull`
 2. `make hooks && make up && make migrate`
-3. `make session-start && make check`
-4. Смёржить #6 и этот PR (ветку переносить `rebase --onto`, не «Update branch»),
-   затем `feat/map-api` от свежего `main`.
+3. После merge карты создать `feat/report-api` от свежего `main`.
 
 ## Open
 

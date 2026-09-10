@@ -3,6 +3,15 @@
 Формат: [Keep a Changelog](https://keepachangelog.com/). Версия — semver
 `major.minor.patch`. Источник правды: файл `VERSION`. Как бампать: `docs/versioning.md`.
 
+## 0.3.0 — 2026-09-10
+
+### Added
+
+- `GET /api/v1/map/` — GeoJSON-выдача активных объявлений и видимых отметок
+  по bbox. Точки кластеризуются на сервере в ячейки Web Mercator.
+- Публичная выдача карты использует `LostReport.public_geog`; инвариантный тест
+  проверяет, что точная точка пропажи не попадает в API.
+
 ## 0.2.0 — 2026-09-10
 
 ### Added

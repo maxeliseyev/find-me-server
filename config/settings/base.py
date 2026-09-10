@@ -150,7 +150,7 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "Find Me API",
     "DESCRIPTION": "Сервис поиска потерянных животных",
-    "VERSION": "0.1.0",
+    "VERSION": (BASE_DIR / "VERSION").read_text().strip(),
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
@@ -160,6 +160,10 @@ CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
 
 # Раздел 9: точка пропажи — обычно подъезд владельца, публично показываем смещённой.
 PUBLIC_LOCATION_BLUR_M = env.int("PUBLIC_LOCATION_BLUR_M", default=250)
+
+# Размер ячейки кластеризации на карте в пикселях Web Mercator.
+MAP_CLUSTER_CELL_PX = 64
+MAP_CLUSTER_TILE_SIZE = 256
 
 # Раздел 6.2: период полураспада веса отметки, часы.
 SIGHTING_HALF_LIFE_HOURS = {"cat": 12, "dog": 36, "bird": 12, "other": 24}
