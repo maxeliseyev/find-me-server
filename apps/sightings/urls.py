@@ -1,3 +1,8 @@
 from django.urls import path
 
-urlpatterns: list[path] = []  # TODO(этап 1): постановка отметки без регистрации, выдача на карту
+from .views import SightingCreateView, SightingDetailView
+
+urlpatterns = [
+    path("sightings/", SightingCreateView.as_view(), name="sighting-create"),
+    path("sightings/<int:pk>/", SightingDetailView.as_view(), name="sighting-detail"),
+]

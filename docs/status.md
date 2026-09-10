@@ -1,10 +1,10 @@
 # Status
 
-Updated: 2026-09-09
+Updated: 2026-09-10
 Stage: 1 (ядро)
-Step: механические гарантии контракта; код этапа 1 ещё не начат
-Branch: `chore/flow-guards`
-PR: #2 — https://github.com/maxeliseyev/find-me-server/pull/2
+Step: этап 1 — API постановки отметки
+Branch: `feat/sighting-api`
+PR: draft
 Blockers: none
 
 ## Done
@@ -23,31 +23,33 @@ Blockers: none
 
 ## Now
 
-- PR #1 смёржен в `main` squash-коммитом `b7d4e9b`: контракт репозитория.
-- PR #2 (`chore/flow-guards`) перенацелен на `main`: инвариантные тесты,
-  `pre-push`, `make session-start`, Dependabot, required status checks.
-- «Update branch» на GitHub после squash-мержа #1 откатил на ветке шесть
-  файлов (`AGENTS.md`, `CHANGELOG.md`, `VERSION`, `Makefile`,
-  `docs/git-workflow.md`, `docs/status.md`) — восстановлено; в
-  `docs/git-workflow.md` появился раздел про stacked-ветки.
-- Код приложений не менялся: бизнес-логика по-прежнему заглушки
-  с `NotImplementedError`.
+- PR #1 (`b7d4e9b`) и PR #2 (`a3b0a0e`) смёржены: контракт репозитория
+  и его механические гарантии.
+- PR #6 (`chore/dependabot-guard`) открыт: Dependabot предложил Django 6.1,
+  правя границу `<5.3` в `pyproject.toml`; запрет добавлен, его PR закрыт.
+- На этой ветке: первый рабочий код этапа 1 — постановка отметки.
+  `apps/sightings/{serializers,views,throttling,urls}.py`, 10 тестов API
+  и два инвариантных теста (1 — анонимная отметка, 12 — рейтлимит).
 
 ## Next
 
-- Этап 1, первый шаг: API постановки отметки без регистрации
-  (`apps/sightings`) — сериализатор, вьюха, рейтлимит, тесты на
-  `author IS NULL` / `report IS NULL`.
+- Этап 1, следующий шаг: выдача для карты — активные объявления и видимые
+  отметки в bbox, кластеризация на сервере, публичная точка объявления
+  через `public_geog`.
 
 ## Resume
 
-1. `git fetch && git checkout chore/flow-guards && git pull`
+1. `git fetch && git checkout feat/sighting-api && git pull`
 2. `make hooks && make up && make migrate`
 3. `make session-start && make check`
-4. Смёржить #2, затем начать `feat/sighting-api` от свежего `main`.
+4. Смёржить #6 и этот PR (ветку переносить `rebase --onto`, не «Update branch»),
+   затем `feat/map-api` от свежего `main`.
 
 ## Open
 
+- Фан-аут уведомлений и пересчёт зоны при новой отметке не подключены:
+  задачи Celery ещё заглушки. В `SightingCreateView` стоит TODO с местом вызова.
+- Загрузка фото к отметке (и срезка EXIF) — отдельный шаг, в этом API нет.
 - Монетизация не выбрана (раздел 12.1 спеки). Решение нужно до конца этапа 1:
   платное продвижение — отдельная подсистема, а не поле в модели.
 - Город и район пилота не выбраны; в коде не хардкодятся.
