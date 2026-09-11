@@ -1,11 +1,13 @@
 """Публичные API объявлений."""
 
-from rest_framework import serializers
-from rest_framework.permissions import AllowAny
+from rest_framework import generics, serializers
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .map import map_features, viewport_polygon
+from .serializers import LostReportCreateSerializer, LostReportOwnerSerializer
 
 
 class MapViewportSerializer(serializers.Serializer):
@@ -45,3 +47,19 @@ class MapViewportView(APIView):
                 "features": map_features(bbox=bbox, zoom=data["zoom"]),
             }
         )
+
+
+class LostReportCreateView(generics.CreateAPIView):
+    """POST /api/v1/reports/ — создать активное объявление о пропаже."""
+
+    serializer_class = LostReportCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        if request.user.is_banned:
+            raise PermissionDenied("Аккаунт заблокирован.")
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        report = serializer.save()
+        return Response(LostReportOwnerSerializer(report).data, status=201)

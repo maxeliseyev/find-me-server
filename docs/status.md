@@ -1,10 +1,10 @@
 # Status
 
-Updated: 2026-09-10
+Updated: 2026-09-11
 Stage: 1 (ядро)
-Step: спецификация v0.2
-Branch: `docs/spec-v0-2`
-PR: https://github.com/maxeliseyev/find-me-server/pull/9 (draft)
+Step: этап 1 — API создания объявления
+Branch: `feat/report-api`
+PR: none
 Blockers: none
 
 ## Done
@@ -20,21 +20,23 @@ Blockers: none
   и два инвариантных теста (1 — анонимная отметка, 12 — рейтлимит).
 - API карты слито в `main` коммитом `daae2c4`: GeoJSON-выдача по bbox,
   серверная кластеризация и публичная точка объявления.
+- Спецификация v0.2 слита в `main` коммитом `6c69f62`: открытый стек карты
+  и геокодинга, Telegram как канал создания отметки.
 
 ## Now
 
-- Draft PR #9: уточнены стек карты, геокодинг и Telegram как канал создания
-  отметки; добавлены два ADR. `make lint` и `make test` зелёные.
+- На ветке `feat/report-api` реализовано создание активного объявления и
+  животного одной транзакцией. Нужны полная проверка, commit, push и draft PR.
 
 ## Next
 
-- Проверить и смёржить draft PR #9.
+- Открыть draft PR для API создания объявления после полной проверки.
 
 ## Resume
 
-1. `git fetch && git checkout docs/spec-v0-2 && git pull`
+1. `git fetch && git checkout feat/report-api && git pull`
 2. `make hooks && make up && make migrate`
-3. Проверить и смёржить #9; затем создать `feat/report-api`.
+3. Запустить `make check`, затем commit, push и открыть draft PR.
 
 ## Open
 
