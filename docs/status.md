@@ -4,7 +4,7 @@ Updated: 2026-09-11
 Stage: 1 (ядро)
 Step: этап 1 — безопасная обработка фото
 Branch: `feat/photo-processing`
-PR: none
+PR: https://github.com/maxeliseyev/find-me-server/pull/11 (draft)
 Blockers: none
 
 ## Done
@@ -27,19 +27,18 @@ Blockers: none
 
 ## Now
 
-- На ветке `feat/photo-processing` реализована серверная декодировка, удаление
-  EXIF, UUID-имя и SHA-256 безопасной копии изображения. Нужны полная проверка,
-  commit, push и draft PR.
+- Draft PR #11: реализована серверная декодировка, удаление EXIF, UUID-имя и
+  SHA-256 безопасной копии изображения. `make lint` и `make test` зелёные.
 
 ## Next
 
-- Открыть draft PR для серверной обработки фото после полной проверки.
+- Проверить и смёржить draft PR #11.
 
 ## Resume
 
 1. `git fetch && git checkout feat/photo-processing && git pull`
 2. `make hooks && make up && make migrate`
-3. Запустить `make check`, затем commit, push и открыть draft PR.
+3. Проверить и смёржить #11; затем реализовать quarantine storage и Celery.
 
 ## Open
 

@@ -21,11 +21,11 @@
 
 ## Status
 
-status.md обновлён: да. Ветка: `feat/photo-processing`.
+status.md обновлён: да. Ветка: `feat/photo-processing`. Draft PR: #11.
 
 ## Next
 
-Подключить обработчик к приватной загрузке и Celery до открытия доступа к фото.
+Проверить и смёржить #11, затем подключить обработчик к quarantine и Celery.
 
 ## Open
 
