@@ -25,11 +25,11 @@
 
 ## Status
 
-status.md обновлён: да. Ветка: `feat/report-api`.
+status.md обновлён: да. Ветка: `feat/report-api`. Draft PR: #10.
 
 ## Next
 
-Открыть draft PR после полной проверки и push ветки.
+Проверить и смёржить #10, затем выбрать следующий шаг этапа 1.
 
 ## Open
 

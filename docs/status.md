@@ -4,7 +4,7 @@ Updated: 2026-09-11
 Stage: 1 (ядро)
 Step: этап 1 — API создания объявления
 Branch: `feat/report-api`
-PR: none
+PR: https://github.com/maxeliseyev/find-me-server/pull/10 (draft)
 Blockers: none
 
 ## Done
@@ -25,18 +25,18 @@ Blockers: none
 
 ## Now
 
-- На ветке `feat/report-api` реализовано создание активного объявления и
-  животного одной транзакцией. Нужны полная проверка, commit, push и draft PR.
+- Draft PR #10: реализовано создание активного объявления и животного одной
+  транзакцией. `make lint` и `make test` зелёные.
 
 ## Next
 
-- Открыть draft PR для API создания объявления после полной проверки.
+- Проверить и смёржить draft PR #10.
 
 ## Resume
 
 1. `git fetch && git checkout feat/report-api && git pull`
 2. `make hooks && make up && make migrate`
-3. Запустить `make check`, затем commit, push и открыть draft PR.
+3. Проверить и смёржить #10; затем создать следующий шаг этапа 1.
 
 ## Open
 
