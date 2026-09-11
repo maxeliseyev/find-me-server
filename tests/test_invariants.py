@@ -129,6 +129,39 @@ def test_invariant_03_map_api_does_not_expose_exact_report_location(report):
 
 
 @pytest.mark.django_db
+def test_invariant_05_report_api_never_publishes_phone(owner):
+    """У публичного API нет поля телефона, даже в ответе владельцу."""
+    response = APIClient().post(
+        reverse("report-create"),
+        {
+            "pet": {"species": Species.CAT},
+            "last_seen_at": (timezone.now() - timedelta(hours=1)).isoformat(),
+            "lat": MOSCOW.y,
+            "lon": MOSCOW.x,
+        },
+        format="json",
+    )
+
+    assert response.status_code == 403
+
+    client = APIClient()
+    client.force_authenticate(owner)
+    response = client.post(
+        reverse("report-create"),
+        {
+            "pet": {"species": Species.CAT},
+            "last_seen_at": (timezone.now() - timedelta(hours=1)).isoformat(),
+            "lat": MOSCOW.y,
+            "lon": MOSCOW.x,
+        },
+        format="json",
+    )
+
+    assert response.status_code == 201
+    assert "phone" not in str(response.data)
+
+
+@pytest.mark.django_db
 def test_invariant_06_geo_fields_are_geography_with_gist_index():
     """Координаты — geography(Point,4326); поиск по радиусу идёт по GiST."""
     fields = [
