@@ -165,6 +165,12 @@ PUBLIC_LOCATION_BLUR_M = env.int("PUBLIC_LOCATION_BLUR_M", default=250)
 MAP_CLUSTER_CELL_PX = 64
 MAP_CLUSTER_TILE_SIZE = 256
 
+# Лимиты обработки фото: исходник всегда перекодируется без метаданных.
+IMAGE_MAX_DIMENSION = 2048
+IMAGE_WEBP_QUALITY = 85
+IMAGE_MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+IMAGE_MAX_PIXELS = 20_000_000
+
 # Раздел 6.2: период полураспада веса отметки, часы.
 SIGHTING_HALF_LIFE_HOURS = {"cat": 12, "dog": 36, "bird": 12, "other": 24}
 
