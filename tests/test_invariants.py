@@ -9,17 +9,21 @@
 
 import math
 from datetime import timedelta
+from io import BytesIO
 
 import pytest
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 from rest_framework.test import APIClient
 
 from apps.core.enums import Species
+from apps.core.images import sanitize_image
 from apps.geo.models import GeoSubscription
 from apps.pets.models import Pet
 from apps.reports.models import LocationPrecision, LostReport
@@ -159,6 +163,20 @@ def test_invariant_05_report_api_never_publishes_phone(owner):
 
     assert response.status_code == 201
     assert "phone" not in str(response.data)
+
+
+def test_invariant_04_sanitized_image_has_no_exif_metadata():
+    """Фото перед публикацией пересохраняется без EXIF, включая GPS."""
+    source = Image.new("RGB", (10, 10))
+    exif = Image.Exif()
+    exif[34853] = {1: "N", 2: (55, 45, 30), 3: "E", 4: (37, 36, 15)}
+    raw = BytesIO()
+    source.save(raw, "JPEG", exif=exif)
+
+    sanitized = sanitize_image(SimpleUploadedFile("source.jpg", raw.getvalue()))
+
+    with Image.open(sanitized.content) as result:
+        assert result.getexif() == {}
 
 
 @pytest.mark.django_db
