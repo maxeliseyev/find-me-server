@@ -35,7 +35,7 @@ PR #11 дал функции очистки изображения, но их н
 
 ## Status
 
-status.md обновлён: да. Ветка: `claude/eloquent-mccarthy-oq9n9c`.
+status.md обновлён: да. Ветка: `claude/eloquent-mccarthy-oq9n9c`. PR: #12.
 
 ## Next
 

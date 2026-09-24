@@ -4,7 +4,7 @@ Updated: 2026-09-24
 Stage: 1 (ядро)
 Step: этап 1 — карантин и Celery-публикация фото отметок
 Branch: `claude/eloquent-mccarthy-oq9n9c`
-PR: none (ветка запушена, PR по запросу)
+PR: https://github.com/maxeliseyev/find-me-server/pull/12
 Blockers: none
 
 ## Done
@@ -32,14 +32,14 @@ Blockers: none
 
 ## Next
 
-- Открыть PR с этой ветки и смёржить; затем endpoint загрузки фото к отметке
+- Смёржить #12; затем endpoint загрузки фото к отметке
   поверх `accept_sighting_photo`.
 
 ## Resume
 
 1. `git fetch && git checkout claude/eloquent-mccarthy-oq9n9c && git pull`
 2. `make hooks && make up && make migrate && make test`
-3. Открыть PR в `main`; после мержа — endpoint загрузки фото.
+3. Смёржить #12; после мержа — endpoint загрузки фото.
 
 ## Open
 
