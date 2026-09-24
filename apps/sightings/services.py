@@ -1,14 +1,18 @@
 """Приём и публикация фото отметок."""
 
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.core import signing
 from django.db import transaction
+from django.utils import timezone
 
 from apps.core.enums import PhotoStatus
 from apps.core.images import ImageProcessingError, extract_gps, sanitize_image
+from apps.core.storage import quarantine_storage, walk_files
 
 from .models import Sighting, SightingPhoto
 from .tasks import process_sighting_photo
@@ -113,3 +117,76 @@ def publish_sighting_photo(photo_id: int) -> PhotoStatus | None:
         transaction.on_commit(lambda: storage.delete(name))
 
     return photo.status
+
+
+@dataclass(frozen=True)
+class QuarantineSweep:
+    retried: int
+    given_up: int
+    orphans_deleted: int
+
+
+def sweep_photo_quarantine(now: datetime | None = None) -> QuarantineSweep:
+    """Довести или отбросить зависшие фото и удалить файлы-сироты из карантина.
+
+    Исходник с EXIF не должен жить в карантине дольше, чем его обрабатывают:
+    задача могла упасть на сбое storage, воркер — перезапуститься, транзакция
+    приёма — откатиться после записи файла.
+    """
+    now = now or timezone.now()
+    pending = SightingPhoto.objects.filter(status=PhotoStatus.PENDING)
+
+    give_up_before = now - timedelta(hours=settings.PHOTO_PENDING_GIVE_UP_HOURS)
+    given_up = 0
+    for photo_id in pending.filter(created_at__lt=give_up_before).values_list("pk", flat=True):
+        given_up += _give_up_photo(photo_id)
+
+    retry_before = now - timedelta(minutes=settings.PHOTO_PENDING_RETRY_AFTER_MINUTES)
+    retry_ids = list(
+        pending.filter(created_at__lt=retry_before, created_at__gte=give_up_before).values_list(
+            "pk", flat=True
+        )
+    )
+    for photo_id in retry_ids:
+        process_sighting_photo.delay(photo_id)
+
+    return QuarantineSweep(
+        retried=len(retry_ids),
+        given_up=given_up,
+        orphans_deleted=_delete_quarantine_orphans(now),
+    )
+
+
+def _give_up_photo(photo_id: int) -> int:
+    with transaction.atomic():
+        photo = (
+            SightingPhoto.objects.select_for_update()
+            .filter(pk=photo_id, status=PhotoStatus.PENDING)
+            .first()
+        )
+        if photo is None:
+            return 0
+        storage, name = photo.original.storage, photo.original.name
+        photo.status = PhotoStatus.REJECTED
+        photo.original = ""
+        photo.save(update_fields=["status", "original", "updated_at"])
+        if name:
+            transaction.on_commit(lambda: storage.delete(name))
+    return 1
+
+
+def _delete_quarantine_orphans(now: datetime) -> int:
+    storage = quarantine_storage()
+    # Исходников в карантине мало по построению: они живут до обработки.
+    referenced = set(SightingPhoto.objects.exclude(original="").values_list("original", flat=True))
+    # Запас по времени: файл пишется до коммита записи о фото, и в этом окне
+    # он выглядит сиротой, хотя приём ещё идёт.
+    cutoff = now - timedelta(hours=settings.QUARANTINE_ORPHAN_GRACE_HOURS)
+
+    deleted = 0
+    for name in walk_files(storage):
+        if name in referenced or storage.get_modified_time(name) >= cutoff:
+            continue
+        storage.delete(name)
+        deleted += 1
+    return deleted

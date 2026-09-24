@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from celery import shared_task
 
 
@@ -19,3 +21,11 @@ def process_sighting_photo(photo_id: int) -> str | None:
     from .services import publish_sighting_photo
 
     return publish_sighting_photo(photo_id)
+
+
+@shared_task
+def sweep_photo_quarantine() -> dict:
+    """Плановая уборка карантина фото: зависшие обработки и файлы-сироты."""
+    from .services import sweep_photo_quarantine as sweep
+
+    return asdict(sweep())

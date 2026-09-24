@@ -15,6 +15,11 @@ app.conf.beat_schedule = {
         "task": "apps.sightings.tasks.recalc_active_search_zones",
         "schedule": crontab(minute="*/15"),
     },
+    # Исходники фото с EXIF не живут в карантине дольше обработки.
+    "sweep-photo-quarantine": {
+        "task": "apps.sightings.tasks.sweep_photo_quarantine",
+        "schedule": crontab(minute="*/15"),
+    },
     # Раздел 12.2: автоархив объявлений, которые никто не закрыл.
     "archive-stale-reports": {
         "task": "apps.reports.tasks.archive_stale_reports",

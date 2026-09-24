@@ -3,6 +3,16 @@
 Формат: [Keep a Changelog](https://keepachangelog.com/). Версия — semver
 `major.minor.patch`. Источник правды: файл `VERSION`. Как бампать: `docs/versioning.md`.
 
+## 0.8.0 — 2026-09-24
+
+### Added
+
+- Плановая задача `sweep_photo_quarantine` (каждые 15 минут): перезапускает
+  обработку фото, зависших в `pending` дольше
+  `PHOTO_PENDING_RETRY_AFTER_MINUTES`, отклоняет и удаляет исходник у фото
+  старше `PHOTO_PENDING_GIVE_UP_HOURS`, удаляет файлы карантина без записи
+  о фото старше `QUARANTINE_ORPHAN_GRACE_HOURS`.
+
 ## 0.7.0 — 2026-09-24
 
 ### Added
