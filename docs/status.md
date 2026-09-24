@@ -4,7 +4,7 @@ Updated: 2026-09-24
 Stage: 1 (ядро)
 Step: этап 1 — API загрузки фото к отметке
 Branch: `claude/eloquent-mccarthy-oq9n9c`
-PR: none (ветка запушена, PR — следующим действием)
+PR: https://github.com/maxeliseyev/find-me-server/pull/13
 Blockers: none
 
 ## Done
@@ -33,14 +33,14 @@ Blockers: none
 
 ## Next
 
-- Смёржить PR этой ветки; затем уборка зависших `pending`-фото и сирот в
+- Смёржить #13; затем уборка зависших `pending`-фото и сирот в
   карантине.
 
 ## Resume
 
 1. `git fetch && git checkout claude/eloquent-mccarthy-oq9n9c && git pull`
 2. `make hooks && make up && make migrate && make test`
-3. Смёржить PR; затем периодическая задача уборки карантина.
+3. Смёржить #13; затем периодическая задача уборки карантина.
 
 ## Open
 
