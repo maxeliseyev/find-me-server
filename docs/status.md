@@ -2,9 +2,9 @@
 
 Updated: 2026-09-24
 Stage: 1 (ядро)
-Step: этап 1 — карантин и Celery-публикация фото отметок
+Step: этап 1 — API загрузки фото к отметке
 Branch: `claude/eloquent-mccarthy-oq9n9c`
-PR: https://github.com/maxeliseyev/find-me-server/pull/12
+PR: none (ветка запушена, PR — следующим действием)
 Blockers: none
 
 ## Done
@@ -21,31 +21,33 @@ Blockers: none
 - API создания объявления слито в `main` коммитом `7299cce`.
 - Безопасная обработка изображения (`apps/core/images.py`) слита в `main`
   коммитом `af8ce58` (#11).
+- Карантин исходников и Celery-публикация фото слиты в `main` коммитом
+  `c196575` (#12).
 
 ## Now
 
-- На ветке: карантин исходников (`STORAGES["quarantine"]`), статус и
-  `exif_geog` у `SightingPhoto` (миграция `sightings/0002`),
-  `apps/sightings/services.py` и задача `process_sighting_photo`.
-  `make lint` и `make test` (53 passed) зелёные, `makemigrations --check` чистый.
-  Почему так — `docs/sessions/2026-09-24-photo-quarantine.md`.
+- На ветке: `POST /api/v1/sightings/<id>/photos/` с токеном загрузки из ответа
+  на создание отметки, лимит фото, отдельный рейтлимит, `photos` в отметке.
+  `make check` зелёный (65 passed). Почему так —
+  `docs/sessions/2026-09-24-sighting-photo-upload.md`.
 
 ## Next
 
-- Смёржить #12; затем endpoint загрузки фото к отметке
-  поверх `accept_sighting_photo`.
+- Смёржить PR этой ветки; затем уборка зависших `pending`-фото и сирот в
+  карантине.
 
 ## Resume
 
 1. `git fetch && git checkout claude/eloquent-mccarthy-oq9n9c && git pull`
 2. `make hooks && make up && make migrate && make test`
-3. Смёржить #12; после мержа — endpoint загрузки фото.
+3. Смёржить PR; затем периодическая задача уборки карантина.
 
 ## Open
 
 - Фан-аут уведомлений и пересчёт зоны при новой отметке не подключены:
   задачи Celery ещё заглушки. В `SightingCreateView` стоит TODO с местом вызова.
 - Нет уборки зависших `pending`-фото и сирот в карантине — нужна до запуска.
+- Размер тела загрузки фото ограничить на прокси (`client_max_body_size`).
 - `PetPhoto` ещё не переведён на карантин.
 - Монетизация не выбрана (раздел 12.1 спеки). Решение нужно до конца этапа 1:
   платное продвижение — отдельная подсистема, а не поле в модели.

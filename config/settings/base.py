@@ -149,6 +149,8 @@ REST_FRAMEWORK = {
         # Отметку ставят без регистрации — рейтлимит здесь единственная защита.
         "anon_sighting": "10/hour",
         "user_sighting": "60/hour",
+        "anon_sighting_photo": "30/hour",
+        "user_sighting_photo": "120/hour",
     },
 }
 
@@ -175,6 +177,10 @@ IMAGE_MAX_DIMENSION = 2048
 IMAGE_WEBP_QUALITY = 85
 IMAGE_MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 IMAGE_MAX_PIXELS = 20_000_000
+# Фото к отметке: сколько живёт токен загрузки из ответа на создание отметки
+# и сколько фото принимаем на одну отметку.
+SIGHTING_PHOTO_UPLOAD_TTL_MINUTES = 60
+SIGHTING_PHOTOS_MAX = 5
 
 # Раздел 6.2: период полураспада веса отметки, часы.
 SIGHTING_HALF_LIFE_HOURS = {"cat": 12, "dog": 36, "bird": 12, "other": 24}

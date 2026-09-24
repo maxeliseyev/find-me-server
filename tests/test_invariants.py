@@ -208,6 +208,22 @@ def test_invariant_04_only_sanitized_copy_outlives_the_quarantine(
 
 
 @pytest.mark.django_db
+def test_invariant_04_unprocessed_photo_is_not_served():
+    """Пока безопасная копия не готова, отметка не отдаёт ни фото, ни ссылки."""
+    sighting = Sighting.objects.create(
+        geog=MOSCOW, seen_at=timezone.now(), source=SightingSource.MANUAL_PIN
+    )
+    SightingPhoto.objects.create(
+        sighting=sighting, original="sightings/raw", image="sightings/not-yet.webp"
+    )
+
+    response = APIClient().get(reverse("sighting-detail", args=[sighting.pk]))
+
+    assert response.data["photos"] == []
+    assert "sightings/" not in str(response.data)
+
+
+@pytest.mark.django_db
 def test_invariant_06_geo_fields_are_geography_with_gist_index():
     """Координаты — geography(Point,4326); поиск по радиусу идёт по GiST."""
     fields = [
@@ -314,3 +330,23 @@ def test_invariant_11_photo_is_processed_by_celery_not_in_request(
     task.delay.assert_called_once_with(photo.pk)
     photo.refresh_from_db()
     assert photo.status == PhotoStatus.PENDING
+
+
+@pytest.mark.django_db
+def test_invariant_12_anonymous_photo_uploads_are_rate_limited():
+    """Загрузка фото без регистрации тоже держится только на рейтлимите."""
+    sighting = Sighting.objects.create(
+        geog=MOSCOW, seen_at=timezone.now(), source=SightingSource.MANUAL_PIN
+    )
+    client = APIClient()
+    url = reverse("sighting-photo-upload", args=[sighting.pk])
+    rate = settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["anon_sighting_photo"]
+    limit = int(rate.split("/")[0])
+
+    def post():
+        return client.post(url, {"image": SimpleUploadedFile("a.jpg", b"x")}, format="multipart")
+
+    for _ in range(limit):
+        assert post().status_code != 429
+
+    assert post().status_code == 429
