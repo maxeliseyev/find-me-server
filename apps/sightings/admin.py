@@ -5,8 +5,18 @@ from .models import SearchZone, Sighting, SightingPhoto
 
 
 class SightingPhotoInline(admin.TabularInline):
+    """Только просмотр: загрузка из админки обошла бы очистку EXIF.
+
+    Исходник из карантина и точку из EXIF модератору не показываем.
+    """
+
     model = SightingPhoto
     extra = 0
+    fields = ("image", "status", "exif_stripped", "sha256", "created_at")
+    readonly_fields = fields
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Sighting)

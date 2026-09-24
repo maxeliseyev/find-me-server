@@ -3,6 +3,24 @@
 Формат: [Keep a Changelog](https://keepachangelog.com/). Версия — semver
 `major.minor.patch`. Источник правды: файл `VERSION`. Как бампать: `docs/versioning.md`.
 
+## 0.6.0 — 2026-09-24
+
+### Added
+
+- Карантин исходников фото отметок: отдельное приватное хранилище
+  `STORAGES["quarantine"]`, в production — отдельный бакет
+  `S3_QUARANTINE_BUCKET_NAME`. Имя файла пользователя не сохраняется.
+- Celery-задача `process_sighting_photo` публикует WebP-копию без метаданных,
+  сохраняет точку из EXIF в приватное поле `exif_geog`, отклоняет
+  не-изображения и удаляет исходник из карантина.
+- Статус обработки фото (`pending` / `published` / `rejected`) и SHA-256
+  опубликованной копии в `SightingPhoto`.
+
+### Changed
+
+- Фото отметок в админке только просматриваются: загрузка в обход очистки
+  закрыта.
+
 ## 0.5.0 — 2026-09-11
 
 ### Added

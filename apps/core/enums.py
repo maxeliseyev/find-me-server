@@ -20,3 +20,9 @@ class Sex(models.TextChoices):
     MALE = "male", "Самец"
     FEMALE = "female", "Самка"
     UNKNOWN = "unknown", "Неизвестно"
+
+
+class PhotoStatus(models.TextChoices):
+    PENDING = "pending", "Ожидает обработки"
+    PUBLISHED = "published", "Опубликовано"
+    REJECTED = "rejected", "Отклонено"
