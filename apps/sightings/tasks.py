@@ -14,6 +14,8 @@ def recalc_active_search_zones() -> int:
 
 
 @shared_task
-def process_sighting_photo(photo_id: int) -> None:
-    """Прочитать GPS из EXIF, вырезать метаданные, сделать превью."""
-    raise NotImplementedError
+def process_sighting_photo(photo_id: int) -> str | None:
+    """Опубликовать безопасную копию фото и удалить исходник из карантина."""
+    from .services import publish_sighting_photo
+
+    return publish_sighting_photo(photo_id)

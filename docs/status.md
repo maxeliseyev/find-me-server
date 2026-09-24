@@ -1,10 +1,10 @@
 # Status
 
-Updated: 2026-09-11
+Updated: 2026-09-24
 Stage: 1 (ядро)
-Step: этап 1 — безопасная обработка фото
-Branch: `feat/photo-processing`
-PR: https://github.com/maxeliseyev/find-me-server/pull/11 (draft)
+Step: этап 1 — карантин и Celery-публикация фото отметок
+Branch: `claude/eloquent-mccarthy-oq9n9c`
+PR: none (ветка запушена, PR по запросу)
 Blockers: none
 
 ## Done
@@ -15,37 +15,38 @@ Blockers: none
 - Контракт репозитория и механические гарантии слиты в `main` коммитами
   `b7d4e9b` и `a3b0a0e`.
 - Dependabot не может поднимать major/minor Django (`0237a35`).
-- API постановки отметки слито в `main` коммитом `a529d63`:
-  `apps/sightings/{serializers,views,throttling,urls}.py`, 10 тестов API
-  и два инвариантных теста (1 — анонимная отметка, 12 — рейтлимит).
-- API карты слито в `main` коммитом `daae2c4`: GeoJSON-выдача по bbox,
-  серверная кластеризация и публичная точка объявления.
-- Спецификация v0.2 слита в `main` коммитом `6c69f62`: открытый стек карты
-  и геокодинга, Telegram как канал создания отметки.
-- API создания объявления слито в `main` коммитом `7299cce`: владелец создаёт
-  животное и активное объявление одной транзакцией.
+- API постановки отметки слито в `main` коммитом `a529d63`.
+- API карты слито в `main` коммитом `daae2c4`.
+- Спецификация v0.2 слита в `main` коммитом `6c69f62`.
+- API создания объявления слито в `main` коммитом `7299cce`.
+- Безопасная обработка изображения (`apps/core/images.py`) слита в `main`
+  коммитом `af8ce58` (#11).
 
 ## Now
 
-- Draft PR #11: реализована серверная декодировка, удаление EXIF, UUID-имя и
-  SHA-256 безопасной копии изображения. `make lint` и `make test` зелёные.
+- На ветке: карантин исходников (`STORAGES["quarantine"]`), статус и
+  `exif_geog` у `SightingPhoto` (миграция `sightings/0002`),
+  `apps/sightings/services.py` и задача `process_sighting_photo`.
+  `make lint` и `make test` (53 passed) зелёные, `makemigrations --check` чистый.
+  Почему так — `docs/sessions/2026-09-24-photo-quarantine.md`.
 
 ## Next
 
-- Проверить и смёржить draft PR #11.
+- Открыть PR с этой ветки и смёржить; затем endpoint загрузки фото к отметке
+  поверх `accept_sighting_photo`.
 
 ## Resume
 
-1. `git fetch && git checkout feat/photo-processing && git pull`
-2. `make hooks && make up && make migrate`
-3. Проверить и смёржить #11; затем реализовать quarantine storage и Celery.
+1. `git fetch && git checkout claude/eloquent-mccarthy-oq9n9c && git pull`
+2. `make hooks && make up && make migrate && make test`
+3. Открыть PR в `main`; после мержа — endpoint загрузки фото.
 
 ## Open
 
 - Фан-аут уведомлений и пересчёт зоны при новой отметке не подключены:
   задачи Celery ещё заглушки. В `SightingCreateView` стоит TODO с местом вызова.
-- Следующий шаг фото: приватный quarantine storage и Celery-публикация
-  обработанной копии; endpoint загрузки до этого не открывать.
+- Нет уборки зависших `pending`-фото и сирот в карантине — нужна до запуска.
+- `PetPhoto` ещё не переведён на карантин.
 - Монетизация не выбрана (раздел 12.1 спеки). Решение нужно до конца этапа 1:
   платное продвижение — отдельная подсистема, а не поле в модели.
 - Город и район пилота не выбраны; в коде не хардкодятся.

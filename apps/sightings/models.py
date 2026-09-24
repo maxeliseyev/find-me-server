@@ -3,8 +3,9 @@ from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-from apps.core.enums import Species
+from apps.core.enums import PhotoStatus, Species
 from apps.core.models import TimeStampedModel
+from apps.core.storage import quarantine_storage
 
 
 class SightingSource(models.TextChoices):
@@ -88,11 +89,31 @@ class Sighting(TimeStampedModel):
 class SightingPhoto(TimeStampedModel):
     """Фото к отметке.
 
-    EXIF читаем на сервере (может дать координаты) и вырезаем перед отдачей — раздел 9.
+    Исходник лежит в приватном карантине до обработки Celery; наружу идёт только
+    перекодированная копия без метаданных (раздел 9,
+    `docs/decisions/safe-user-image-storage.md`).
     """
 
     sighting = models.ForeignKey(Sighting, on_delete=models.CASCADE, related_name="photos")
-    image = models.ImageField("фото", upload_to="sightings/%Y/%m/")
+    original = models.FileField(
+        "исходник в карантине",
+        storage=quarantine_storage,
+        upload_to="sightings/%Y/%m/",
+        blank=True,
+    )
+    image = models.ImageField("фото", upload_to="sightings/%Y/%m/", blank=True)
+    status = models.CharField(
+        "статус обработки",
+        max_length=16,
+        choices=PhotoStatus,
+        default=PhotoStatus.PENDING,
+        db_index=True,
+    )
+    sha256 = models.CharField("SHA-256 опубликованной копии", max_length=64, blank=True)
+    # Точка из EXIF исходника — сырьё для автопозиционирования, не публичные данные.
+    exif_geog = gis_models.PointField(
+        "точка из EXIF", geography=True, srid=4326, spatial_index=True, null=True, blank=True
+    )
     exif_stripped = models.BooleanField("EXIF вырезан", default=False)
 
     class Meta:

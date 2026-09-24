@@ -10,6 +10,7 @@
 import math
 from datetime import timedelta
 from io import BytesIO
+from unittest.mock import patch
 
 import pytest
 from django.conf import settings
@@ -22,12 +23,13 @@ from django.utils import timezone
 from PIL import Image
 from rest_framework.test import APIClient
 
-from apps.core.enums import Species
+from apps.core.enums import PhotoStatus, Species
 from apps.core.images import sanitize_image
 from apps.geo.models import GeoSubscription
 from apps.pets.models import Pet
 from apps.reports.models import LocationPrecision, LostReport
-from apps.sightings.models import Sighting, SightingSource
+from apps.sightings.models import Sighting, SightingPhoto, SightingSource
+from apps.sightings.services import accept_sighting_photo
 
 MOSCOW = Point(37.6173, 55.7558, srid=4326)
 
@@ -180,12 +182,39 @@ def test_invariant_04_sanitized_image_has_no_exif_metadata():
 
 
 @pytest.mark.django_db
+def test_invariant_04_only_sanitized_copy_outlives_the_quarantine(
+    django_capture_on_commit_callbacks,
+):
+    """Опубликованное фото без EXIF, исходник с метаданными удалён из карантина."""
+    sighting = Sighting.objects.create(
+        geog=MOSCOW, seen_at=timezone.now(), source=SightingSource.MANUAL_PIN
+    )
+    exif = Image.Exif()
+    exif[34853] = {1: "N", 2: (55, 45, 30), 3: "E", 4: (37, 36, 15)}
+    raw = BytesIO()
+    Image.new("RGB", (10, 10)).save(raw, "JPEG", exif=exif)
+
+    with django_capture_on_commit_callbacks(execute=True):
+        photo = accept_sighting_photo(sighting, SimpleUploadedFile("home.jpg", raw.getvalue()))
+    original_name = photo.original.name
+
+    photo.refresh_from_db()
+    assert photo.status == PhotoStatus.PUBLISHED
+    assert photo.exif_stripped is True
+    with Image.open(photo.image) as result:
+        assert result.getexif() == {}
+    assert not photo.original
+    assert not photo.original.storage.exists(original_name)
+
+
+@pytest.mark.django_db
 def test_invariant_06_geo_fields_are_geography_with_gist_index():
     """Координаты — geography(Point,4326); поиск по радиусу идёт по GiST."""
     fields = [
         Sighting._meta.get_field("geog"),
         LostReport._meta.get_field("last_seen_geog"),
         GeoSubscription._meta.get_field("geog"),
+        SightingPhoto._meta.get_field("exif_geog"),
     ]
     for field in fields:
         assert field.geography is True, field
@@ -198,7 +227,12 @@ def test_invariant_06_geo_fields_are_geography_with_gist_index():
         )
         tables = {row[0] for row in cursor.fetchall()}
 
-    assert {"sightings_sighting", "reports_lostreport", "geo_geosubscription"} <= tables
+    assert {
+        "sightings_sighting",
+        "sightings_sightingphoto",
+        "reports_lostreport",
+        "geo_geosubscription",
+    } <= tables
 
 
 @pytest.mark.django_db
@@ -256,3 +290,27 @@ def test_invariant_12_anonymous_sightings_are_rate_limited():
         assert post().status_code == 201
 
     assert post().status_code == 429
+
+
+@pytest.mark.django_db
+def test_invariant_11_photo_is_processed_by_celery_not_in_request(
+    django_capture_on_commit_callbacks,
+):
+    """Приём фото не декодирует его: обработка уходит в очередь после коммита."""
+    sighting = Sighting.objects.create(
+        geog=MOSCOW, seen_at=timezone.now(), source=SightingSource.MANUAL_PIN
+    )
+    raw = BytesIO()
+    Image.new("RGB", (10, 10)).save(raw, "JPEG")
+
+    with (
+        patch("apps.sightings.services.sanitize_image") as sanitize,
+        patch("apps.sightings.services.process_sighting_photo") as task,
+        django_capture_on_commit_callbacks(execute=True),
+    ):
+        photo = accept_sighting_photo(sighting, SimpleUploadedFile("a.jpg", raw.getvalue()))
+
+    sanitize.assert_not_called()
+    task.delay.assert_called_once_with(photo.pk)
+    photo.refresh_from_db()
+    assert photo.status == PhotoStatus.PENDING
