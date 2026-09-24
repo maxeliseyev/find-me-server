@@ -14,3 +14,11 @@ class AnonSightingThrottle(AnonRateThrottle):
 
 class UserSightingThrottle(UserRateThrottle):
     scope = "user_sighting"
+
+
+class AnonSightingPhotoThrottle(AnonRateThrottle):
+    scope = "anon_sighting_photo"
+
+
+class UserSightingPhotoThrottle(UserRateThrottle):
+    scope = "user_sighting_photo"

@@ -3,6 +3,18 @@
 Формат: [Keep a Changelog](https://keepachangelog.com/). Версия — semver
 `major.minor.patch`. Источник правды: файл `VERSION`. Как бампать: `docs/versioning.md`.
 
+## 0.7.0 — 2026-09-24
+
+### Added
+
+- `POST /api/v1/sightings/<id>/photos/` — фото к отметке (multipart `image`).
+  Анонимный автор подтверждает авторство подписанным `photo_upload_token` из
+  ответа на создание отметки (живёт `SIGHTING_PHOTO_UPLOAD_TTL_MINUTES`),
+  авторизованный — сессией. Ответ 202 `pending`: файл уходит в карантин и
+  обрабатывается Celery.
+- Отдельный рейтлимит загрузки фото и лимит `SIGHTING_PHOTOS_MAX` на отметку.
+- `photos` в публичной отметке: только опубликованные копии без EXIF.
+
 ## 0.6.0 — 2026-09-24
 
 ### Added

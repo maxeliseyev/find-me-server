@@ -8,13 +8,38 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.core.enums import Species
+from apps.core.enums import PhotoStatus, Species
 from apps.reports.models import LostReport, ReportStatus
 
-from .models import Confidence, Sighting, SightingSource, SightingStatus
+from .models import Confidence, Sighting, SightingPhoto, SightingSource, SightingStatus
 
 # Часы вперёд, которые прощаем криво выставленным часам устройства.
 FUTURE_TOLERANCE_MINUTES = 5
+
+
+class SightingPhotoSerializer(serializers.ModelSerializer):
+    """Фото отметки. Ссылка есть только у опубликованной копии без EXIF."""
+
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SightingPhoto
+        fields = ("id", "status", "url")
+        read_only_fields = fields
+
+    def get_url(self, obj: SightingPhoto) -> str | None:
+        return obj.image.url if obj.status == PhotoStatus.PUBLISHED and obj.image else None
+
+
+class SightingPhotoUploadSerializer(serializers.Serializer):
+    """Загрузка фото к отметке.
+
+    `FileField`, а не `ImageField`: `ImageField` декодирует файл Pillow прямо в
+    запросе, а декодирование — работа Celery (инвариант 11).
+    """
+
+    image = serializers.FileField()
+    upload_token = serializers.CharField(required=False, allow_blank=True)
 
 
 class SightingSerializer(serializers.ModelSerializer):
@@ -26,6 +51,7 @@ class SightingSerializer(serializers.ModelSerializer):
 
     lat = serializers.SerializerMethodField()
     lon = serializers.SerializerMethodField()
+    photos = serializers.SerializerMethodField()
 
     class Meta:
         model = Sighting
@@ -42,8 +68,15 @@ class SightingSerializer(serializers.ModelSerializer):
             "confidence",
             "animal_in_custody",
             "report",
+            "photos",
         )
         read_only_fields = fields
+
+    def get_photos(self, obj: Sighting) -> list[dict]:
+        # Фильтр питоном по предзагруженным фото: их на отметке не больше
+        # SIGHTING_PHOTOS_MAX, а `.filter()` обошёл бы prefetch.
+        published = [p for p in obj.photos.all() if p.status == PhotoStatus.PUBLISHED]
+        return SightingPhotoSerializer(published, many=True).data
 
     def get_lat(self, obj: Sighting) -> float:
         return obj.geog.y
