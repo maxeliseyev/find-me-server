@@ -1,11 +1,15 @@
 """Приём и публикация фото отметок."""
 
+import posixpath
+from datetime import timedelta
 from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.core import signing
+from django.core.files.storage import Storage
 from django.db import transaction
+from django.utils import timezone
 
 from apps.core.enums import PhotoStatus
 from apps.core.images import ImageProcessingError, extract_gps, sanitize_image
@@ -113,3 +117,63 @@ def publish_sighting_photo(photo_id: int) -> PhotoStatus | None:
         transaction.on_commit(lambda: storage.delete(name))
 
     return photo.status
+
+
+def _reject_abandoned_photo(photo_id: int) -> bool:
+    """Отклонить фото, которое так и не удалось обработать, и убрать исходник."""
+    with transaction.atomic():
+        photo = (
+            SightingPhoto.objects.select_for_update()
+            .filter(pk=photo_id, status=PhotoStatus.PENDING)
+            .first()
+        )
+        if photo is None:
+            return False
+        storage, name = photo.original.storage, photo.original.name
+        photo.status = PhotoStatus.REJECTED
+        photo.original = ""
+        photo.save()
+        if name:
+            transaction.on_commit(lambda: storage.delete(name))
+    return True
+
+
+def _walk_files(storage: Storage, path: str = ""):
+    directories, files = storage.listdir(path)
+    for name in files:
+        yield posixpath.join(path, name)
+    for directory in directories:
+        yield from _walk_files(storage, posixpath.join(path, directory))
+
+
+def sweep_quarantine() -> dict[str, int]:
+    """Довести до конца то, что обработка Celery оставила в карантине.
+
+    Исходник с метаданными не должен лежать бесконечно (инвариант 4), а задача
+    обработки может пропасть: упал брокер, воркер убит, storage ответил ошибкой.
+    Идемпотентна: безопасно запускать параллельно с публикацией.
+    """
+    now = timezone.now()
+    retry_before = now - timedelta(minutes=settings.SIGHTING_PHOTO_RETRY_AFTER_MINUTES)
+    give_up_before = now - timedelta(hours=settings.SIGHTING_PHOTO_GIVE_UP_AFTER_HOURS)
+    stats = {"requeued": 0, "rejected": 0, "orphans_deleted": 0}
+
+    pending = SightingPhoto.objects.filter(status=PhotoStatus.PENDING, created_at__lt=retry_before)
+    for photo_id, created_at in pending.values_list("pk", "created_at"):
+        if created_at < give_up_before:
+            stats["rejected"] += _reject_abandoned_photo(photo_id)
+        else:
+            process_sighting_photo.delay(photo_id)
+            stats["requeued"] += 1
+
+    # Файл пишется до строки в БД, поэтому свежие файлы без записи — не сироты,
+    # а приём, который ещё не закоммитился.
+    storage = SightingPhoto._meta.get_field("original").storage
+    orphan_before = now - timedelta(hours=settings.QUARANTINE_ORPHAN_MIN_AGE_HOURS)
+    referenced = set(SightingPhoto.objects.exclude(original="").values_list("original", flat=True))
+    for name in _walk_files(storage):
+        if name in referenced or storage.get_modified_time(name) >= orphan_before:
+            continue
+        storage.delete(name)
+        stats["orphans_deleted"] += 1
+    return stats
