@@ -19,3 +19,11 @@ def process_sighting_photo(photo_id: int) -> str | None:
     from .services import publish_sighting_photo
 
     return publish_sighting_photo(photo_id)
+
+
+@shared_task
+def sweep_photo_quarantine() -> dict[str, int]:
+    """Перезапустить зависшие фото и удалить сирот из карантина."""
+    from .services import sweep_quarantine
+
+    return sweep_quarantine()

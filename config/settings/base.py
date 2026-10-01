@@ -181,6 +181,11 @@ IMAGE_MAX_PIXELS = 20_000_000
 # и сколько фото принимаем на одну отметку.
 SIGHTING_PHOTO_UPLOAD_TTL_MINUTES = 60
 SIGHTING_PHOTOS_MAX = 5
+# Уборка карантина: через сколько фото в `pending` ставим обработку заново,
+# через сколько сдаёмся и отклоняем, и с какого возраста файл без записи — сирота.
+SIGHTING_PHOTO_RETRY_AFTER_MINUTES = 15
+SIGHTING_PHOTO_GIVE_UP_AFTER_HOURS = 24
+QUARANTINE_ORPHAN_MIN_AGE_HOURS = 24
 
 # Раздел 6.2: период полураспада веса отметки, часы.
 SIGHTING_HALF_LIFE_HOURS = {"cat": 12, "dog": 36, "bird": 12, "other": 24}

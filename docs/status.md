@@ -1,10 +1,10 @@
 # Status
 
-Updated: 2026-09-24
+Updated: 2026-10-01
 Stage: 1 (ядро)
-Step: этап 1 — API загрузки фото к отметке
-Branch: `claude/eloquent-mccarthy-oq9n9c`
-PR: https://github.com/maxeliseyev/find-me-server/pull/13
+Step: этап 1 — уборка карантина фото
+Branch: `feat/quarantine-cleanup`
+PR: —
 Blockers: none
 
 ## Done
@@ -23,30 +23,31 @@ Blockers: none
   коммитом `af8ce58` (#11).
 - Карантин исходников и Celery-публикация фото слиты в `main` коммитом
   `c196575` (#12).
+- API загрузки фото к отметке слито в `main` коммитом `d9e4f1c` (#13):
+  токен загрузки, лимит фото, отдельный рейтлимит, `photos` в отметке.
 
 ## Now
 
-- На ветке: `POST /api/v1/sightings/<id>/photos/` с токеном загрузки из ответа
-  на создание отметки, лимит фото, отдельный рейтлимит, `photos` в отметке.
-  `make check` зелёный (65 passed). Почему так —
-  `docs/sessions/2026-09-24-sighting-photo-upload.md`.
+- На ветке: периодическая задача `sweep_photo_quarantine` (каждые 10 минут):
+  повторная обработка зависших `pending`, отклонение после суток, удаление
+  сирот из карантина. Почему так —
+  `docs/sessions/2026-10-01-quarantine-sweep.md`.
 
 ## Next
 
-- Смёржить #13; затем уборка зависших `pending`-фото и сирот в
-  карантине.
+- Смёржить PR уборки; затем фан-аут уведомлений (заглушки в
+  `apps/geo/tasks.py`), бот с подпиской, `PetPhoto` на карантин.
 
 ## Resume
 
-1. `git fetch && git checkout claude/eloquent-mccarthy-oq9n9c && git pull`
+1. `git fetch && git checkout feat/quarantine-cleanup && git pull`
 2. `make hooks && make up && make migrate && make test`
-3. Смёржить #13; затем периодическая задача уборки карантина.
+3. Смёржить PR; затем ветка от `main` под фан-аут.
 
 ## Open
 
 - Фан-аут уведомлений и пересчёт зоны при новой отметке не подключены:
   задачи Celery ещё заглушки. В `SightingCreateView` стоит TODO с местом вызова.
-- Нет уборки зависших `pending`-фото и сирот в карантине — нужна до запуска.
 - Размер тела загрузки фото ограничить на прокси (`client_max_body_size`).
 - `PetPhoto` ещё не переведён на карантин.
 - Монетизация не выбрана (раздел 12.1 спеки). Решение нужно до конца этапа 1:
